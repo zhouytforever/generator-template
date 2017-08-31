@@ -1,9 +1,10 @@
 {
   "name": "generator-template",
   "version": "0.1.0",
-	"scripts": {
-					"start": "node index.js"
-	},
+  "scripts": {
+    "start": "node src/index.js",
+    "lint": "node node_modules/eslint/bin/eslint.js src/**"
+  },
   "description": "",
   "files": [
     "generators"
