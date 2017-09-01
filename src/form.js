@@ -6,19 +6,58 @@
  */
 
 import inquirer from 'inquirer';
+
 const template = [];
 
-function genFormItem () {
-  var questions = [
+function inputOption(answers) {
+  if (answers.options === undefined) {
+    answers.options = [];
+  }
+  const { type } = answers;
+  if (type !== 'picker' && type !== 'mutiplePicker') {
+    answers.options = null;
+    return Promise.resolve();
+  }
+  return (function next() {
+    return inquirer.prompt([
+      {
+        type: 'input',
+        name: 'label',
+        message: '（label）option的名：',
+      },
+      {
+        type: 'input',
+        name: 'value',
+        message: '（value）option的值：',
+      },
+    ]).then((option) => {
+      answers.options.push(option);
+      return inquirer.prompt({
+        type: 'confirm',
+        name: 'goon',
+        message: '继续其他 option ?（默认 true）',
+        default: true,
+      }).then((a) => {
+        if (a.goon) {
+          return next();
+        }
+        return Promise.resolve();
+      });
+    });
+  }());
+}
+
+function genFormItem() {
+  const questions = [
     {
       type: 'input',
       name: 'id',
-      message: '(id) 表单项的key：'
+      message: '(id) 表单项的key：',
     },
     {
       type: 'input',
       name: 'name',
-      message: '(name) 表单项的标签：'
+      message: '(name) 表单项的标签：',
     },
     {
       type: 'rawlist',
@@ -60,12 +99,12 @@ function genFormItem () {
         'picker',
         'mutiplePicker',
         'picture',
-				'area',
-				'date',
-				'time',
-				'video',
+        'area',
+        'date',
+        'time',
+        'video',
       ],
-			pageSize: 10,
+      pageSize: 10,
       default: 'text',
     },
     {
@@ -79,74 +118,37 @@ function genFormItem () {
       name: 'space',
       message: '(config.space) 是否留白?（默认 false）',
       default: false,
-    }
+    },
   ];
 
-  inquirer.prompt(questions).then(function (answers) {
+  inquirer.prompt(questions).then((answers) => {
     const { rule, space } = answers;
     if (rule === 'none') {
       answers.rule = null;
     }
-		answers.config = space ? { space: true }: { space: false };
-		delete answers.space;
-		for (let k in answers) {
-			if (answers[k] === '') {
-				answers[k] = null;
-			}
-		}
-    inputOption(answers).then( () => {
+    answers.config = space ? { space: true } : { space: false };
+    delete answers.space;
+    Object.keys(answers).forEach((k) => {
+      if (answers[k] === '') {
+        answers[k] = null;
+      }
+    });
+    inputOption(answers).then(() => {
       inquirer.prompt({
         type: 'confirm',
         name: 'continue',
         message: '继续其他表单项 ?（默认 true）',
         default: true,
-      }).then( answer => {
+      }).then((answer) => {
         template.push(answers);
         if (answer.continue) {
           genFormItem();
         } else {
           console.log(JSON.stringify(template, null, '  '));
         }
-      })
-    });
-  });
-};
-
-function inputOption (answers) {
-  if (answers.options === void 0) {
-    answers.options = [];
-  }
-  const { type } = answers;
-  if (type !== 'picker' && type !== 'mutiplePicker') {
-    answers.options = null;
-    return Promise.resolve();
-  }
-  return (function next() {
-    return inquirer.prompt([
-      {
-        type: 'input',
-        name: 'label',
-        message: '（label）option的名：',
-      },
-      {
-        type: 'input',
-        name: 'value',
-        message: '（value）option的值：',
-      }
-    ]).then( option => {
-      answers.options.push( option );
-      return inquirer.prompt({
-        type: 'confirm',
-        name: 'goon',
-        message: '继续其他 option ?（默认 true）',
-        default: true,
-      }).then( a => {
-        if (a.goon) {
-          return next();
-        } else {
-        }
       });
     });
-  })();
+  });
 }
+
 genFormItem();
