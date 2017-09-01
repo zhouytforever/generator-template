@@ -2,7 +2,7 @@
   "name": "generator-template",
   "version": "0.1.0",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "babel-node src/form.js",
     "lint": "node node_modules/eslint/bin/eslint.js src/**"
   },
   "description": "",
@@ -13,10 +13,12 @@
     "yeoman-generator"
   ],
   "dependencies": {
-    "inquirer": "^3.2.2",
-    "yeoman-generator": "^1.1.1"
+    "inquirer": "^3.2.2"
   },
   "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
     "eslint-config-airbnb-base": "^11.3.2",
     "eslint-plugin-import": "^2.7.0"
   }

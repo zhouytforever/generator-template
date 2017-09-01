@@ -1,10 +1,12 @@
 /**
- * Editor prompt example
+ * 一个基于cli的表单模板生成工具
+ * @author yuting
+ * @date: 2017/09/01
+ * @version: 0.0.1
  */
 
-'use strict';
-var inquirer = require('inquirer');
-var template = [];
+import inquirer from 'inquirer';
+const template = [];
 
 function genFormItem () {
   var questions = [
@@ -25,76 +27,85 @@ function genFormItem () {
         'none',
         'required',
       ],
-      message: '(rule) 验证规则：',
-      default: 1,
+      message: '(rule) 验证规则（默认 none）：',
+      default: 'none',
     },
     {
       type: 'input',
       name: 'spec',
-      message: '(spec) 单位：',
+      message: '(spec) 单位（默认 null）：',
       default: null,
 
     },
     {
       type: 'input',
       name: 'holder',
-      message: '(holder) 占位文字：',
+      message: '(holder) 占位文字（默认 null）：',
       default: null,
 
     },
     {
       type: 'confirm',
       name: 'readonly',
-      message: '（readonly）只读？',
+      message: '（readonly）只读？（默认 false）',
       default: false,
     },
     {
       type: 'rawlist',
       name: 'type',
-      message: '(type) 表单项类型：',
+      message: '(type) 表单项类型（默认 text）：',
       choices: [
         'text',
         'number',
         'picker',
         'mutiplePicker',
         'picture',
-        'area'
+				'area',
+				'date',
+				'time',
+				'video',
       ],
+			pageSize: 10,
       default: 'text',
     },
     {
       type: 'input',
       name: 'value',
-      message: '(value) 默认值：',
+      message: '(value) 初始值（默认 null）：',
       default: null,
-      /*
     },
     {
       type: 'confirm',
-      name: 'config.space',
-      message: 'config.space ?',
+      name: 'space',
+      message: '(config.space) 是否留白?（默认 false）',
       default: false,
-      */
     }
   ];
 
   inquirer.prompt(questions).then(function (answers) {
-    const { rule } = answers;
+    const { rule, space } = answers;
     if (rule === 'none') {
       answers.rule = null;
     }
+		answers.config = space ? { space: true }: { space: false };
+		delete answers.space;
+		for (let k in answers) {
+			if (answers[k] === '') {
+				answers[k] = null;
+			}
+		}
     inputOption(answers).then( () => {
       inquirer.prompt({
         type: 'confirm',
         name: 'continue',
-        message: 'continue ?',
+        message: '继续其他表单项 ?（默认 true）',
         default: true,
       }).then( answer => {
         template.push(answers);
         if (answer.continue) {
           genFormItem();
         } else {
-          console.log(template);
+          console.log(JSON.stringify(template, null, '  '));
         }
       })
     });
@@ -127,7 +138,7 @@ function inputOption (answers) {
       return inquirer.prompt({
         type: 'confirm',
         name: 'goon',
-        message: 'go on option ? ',
+        message: '继续其他 option ?（默认 true）',
         default: true,
       }).then( a => {
         if (a.goon) {
